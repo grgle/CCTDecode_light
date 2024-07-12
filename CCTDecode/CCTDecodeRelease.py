@@ -58,13 +58,15 @@ def CCT_extract(img,N,R,color='white'):
     #将输入图像转换为灰度图
     img_gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-    #使用Otsu对图像进行自适应二值化
+    # Adaptive binarization of images using Otsu
     retval,img_bina=cv2.threshold(img_gray,0,1,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
-    #使用findcontours函数对二值化后的图像进行轮廓提取,第三个参数为轮廓点的存储方式，这里选返回所有轮廓点，方便后面做筛选
+    # Use the findcontours function to extract contours from the binarized image. 
+    # The third parameter is the storage method of the contour points. 
+    # Here, all contour points are returned to facilitate subsequent filtering.
     contours, hierarchy = cv2.findContours(img_bina,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)  
     #cv2.drawContours(img,contours,-1,(0,0,255),1) 
-    #遍历提取出来的轮廓，筛选其中的椭圆轮廓    
+    # Traverse the extracted contours and filter the elliptical contours among them  
     for contour in contours:
         area=cv2.contourArea(contour,False)
         length=cv2.arcLength(contour,True)
@@ -78,19 +80,22 @@ def CCT_extract(img,N,R,color='white'):
 #            cv2.drawContours(img,contour,-1,(0,0,255),2)
 #            print('det_r=',det_r)
 #            print('len(contour)=',len(contour))
-        #将轮廓点集转换为numpy数组
+        # Convert set of contour points to numpy array
         e_points=np.array(contour) 
-        #得到拟合的椭圆参数：中心点坐标，尺寸，旋转角
+        #Get the fitted ellipse parameters: center point coordinates, size, rotation angle
         box1=cv2.fitEllipse(e_points)        
-        #print('box1:',box1)       
-        box2=tuple([box1[0],tuple([box1[1][0]*2,box1[1][1]*2]),box1[2]])
-        box3=tuple([box1[0],tuple([box1[1][0]*3,box1[1][1]*3]),box1[2]])          
-        #求得最外层椭圆的最小外接矩形的四个顶点，顺时针方向
+            
+        box2=tuple([box1[0],tuple([box1[1][0]*2.2,box1[1][1]*2.2]),box1[2]])
+        box3=tuple([box1[0],tuple([box1[1][0]*3.4,box1[1][1]*3.4]),box1[2]])          
+        print('box1:',box1) 
+        print('box2:',box2)    
+        print('box3:',box3)    
+        #Find the four vertices of the smallest circumscribed rectangle of the outermost ellipse, clockwise
         minRect = cv2.boxPoints(box3)     
-        #计算椭圆的长轴
+        #Calculate the major axis of an ellipse
         a=max(box3[1][0],box3[1][1])
         s=a    
-        #在原图像中裁剪CCT所在的区域
+        #Crop the area where the CCT is located in the original image
         cct_roi=None
         row_min=round(box1[0][1]-s/2)
         row_max=round(box1[0][1]+s/2)
@@ -98,14 +103,15 @@ def CCT_extract(img,N,R,color='white'):
         col_max=round(box1[0][0]+s/2)
 #            print('判断该ROI是否超出边界......')
 #            print([row_min,row_max,col_min,col_max])
-        #判断cct_roi是否超出原图像边界
+        # Determine whether cct_roi exceeds the boundary of the original image
         if row_min>=0 and row_max<=img_height and col_min>=0 and col_max<=img_width:
-            #从原图像中将cct_roi截取出来            
-            cct_roi=img[row_min:row_max,col_min:col_max]                   
-            #cct_roi相对于原始影像的偏移量
+            # Extract cct_roi from the original image          
+            cct_roi=img[row_min:row_max,col_min:col_max] 
+            cv2.imshow('bubi',cct_roi)                  
+            # The offset of cct_roi relative to the original image
             dx=box1[0][0]-s/2
             dy=box1[0][1]-s/2            
-            #对CCT椭圆区域进行仿射变换将其变为正圆
+            # Perform affine transformation on the CCT elliptical area to turn it into a perfect circle
             src=np.float32([[minRect[0][0]-dx,minRect[0][1]-dy],[minRect[1][0]-dx,minRect[1][1]-dy],
                             [minRect[2][0]-dx,minRect[2][1]-dy],[minRect[3][0]-dx,minRect[3][1]-dy],
                             [box1[0][0]-dx,box1[0][1]-dy]])
