@@ -15,13 +15,15 @@ import socket
 
 SSID = "eth-iot"  # Network SSID
 KEY = "2tMGyT9tnRhL"  # Network key
+#SSID = "gergoleshere"  # Network SSID
+#KEY = "babibubebo"  # Network key
 HOST = ""  # Use first available interface
 PORT = 8080  # Arbitrary non-privileged port
 
 # Init sensor
 sensor.reset()
-sensor.set_framesize(sensor.HD)
-sensor.set_pixformat(sensor.RGB565)
+sensor.set_framesize(sensor.QVGA)
+sensor.set_pixformat(sensor.GRAYSCALE)
 
 # Init wlan module and connect to network
 wlan = network.WLAN(network.STA_IF)

@@ -35,11 +35,6 @@ def CCT_extract(img,N,R,color='black'):
 
     #存放解码结果的list
     CodeTable=[]
-    '''
-    image.shape[0], 图片垂直尺寸
-    image.shape[1], 图片水平尺寸
-    image.shape[2], 图片通道数
-    '''
 
     img_height=img.height()
     img_width=img.width()
@@ -48,7 +43,7 @@ def CCT_extract(img,N,R,color='black'):
 #    print('img_height=',img_height)
 
     #将输入图像转换为灰度图
-    img_gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    #img_gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
     # Adaptive binarization of images using Otsu
     retval,img_bina=cv2.threshold(img_gray,0,1,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
@@ -277,38 +272,6 @@ def swap0and1(code_list):
     return result
 
 
-#分割命令行参数的函数
-def parse_args():
-    parser = argparse.ArgumentParser(description='Detect and Decode the CCT from image.')
-    parser.add_argument('--src_folder', dest='src_folder',
-                        help='images path',
-                        default='./data/', type=str)
-    parser.add_argument('--filename', dest='filename',
-                        help='image filename',
-                        default=None, type=str)
-    parser.add_argument('--bit_n', dest='bit_n',
-                        help='CCT bit number',
-                        default=12, type=int)
-    parser.add_argument('--threshold', dest='threshold',
-                        help='threshold for contour filter, which between 0 and 1',
-                        default=0.85, type=float)
-    parser.add_argument('--save_folder', dest='save_folder',
-                        help='the folder for saving the processed image',
-                        default='./result/', type=str)
-    parser.add_argument('--batch', dest='batch',
-                        help='batch processing or not',
-                        default=False, type=bool)
-    parser.add_argument('--color', dest='color',
-                        help='the color of CCT mark(white over black / black over white)',
-                        default='white', type=str)
-
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
-
-    args = parser.parse_args()
-    return args
-
 #调用程序
 if __name__ == '__main__':
    t0 = time.perf_counter()
@@ -319,7 +282,7 @@ if __name__ == '__main__':
    # Init sensor
    sensor.reset()
    sensor.set_framesize(sensor.FHD)
-   sensor.set_pixformat(sensor.JPEG)
+   sensor.set_pixformat(sensor.GRAYSCALE)
    sensor.skip_frames(time=2000)  # Wait for settings take effect.
    raw_img = sensor.snapshot()
 
